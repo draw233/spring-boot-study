@@ -1,5 +1,5 @@
 services:
   springboot:
-    image: web:latest
+    image: web-jdk17:latest
     ports:
       - 7777:7777
