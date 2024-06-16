@@ -1,0 +1,8 @@
+server:
+  port: 7777
+spring:
+  application:
+    name: web
+logging:
+  level:
+    root: info

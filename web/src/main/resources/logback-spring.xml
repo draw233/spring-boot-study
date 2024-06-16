@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name"/>
+    
+    <property name="LOG_PATH" value="${APP_NAME}/logs"/>
+    <property name="APP_LOG_FILE" value="${LOG_PATH}/application.log"/>
+    <property name="APP_LOG_PATTERN"
+              value="%date{yyyy-MM-dd HH:mm:ss.SSS}|%-5level|%X{trace_id}|%thread|%logger{20}|%message%n%exception"/>
+    
+    <appender name="APPLICATION" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${APP_LOG_FILE}</file>
+        <encoder>
+            <pattern>${APP_LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${APP_LOG_FILE}.%d{yyyy-MM-dd}.%i</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <maxFileSize>200MB</maxFileSize>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    <appender name="APPLICATION-async" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>256</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="APPLICATION"/>
+    </appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${APP_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+    
+    <!--logger用来设置某个LoggerName的打印级别-->
+    <!--配置指定所有LoggerName为com.example的日志以DEBUG级别进行打印（TRACE级别将不会输出），此配置绑定的输出器（appender）为APPLICATION-async-->
+    <!--一般实际业务场景中，所有<logger>都建议加上additivity="false" ，否则日志就会因查找到多个<logger>（或<root>）而打印多份。-->
+    <logger level="DEBUG" additivity="false" name="com.example">
+        <appender-ref ref="APPLICATION-async"/>
+    </logger>
+    <!--<root>就是兜底配置了，当LoggerName没匹配到任何一项<logger> 时，就会使用 <root>，所以它是没有additivity和name属性的-->
+    <root level="DEBUG">
+        <appender-ref ref="APPLICATION-async"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+    <!--如果是以下环境则控制台不打印日志-->
+    <springProfile name="production,dev,test">
+        <root level="INFO">
+            <appender-ref ref="APPLICATION-async"/>
+        </root>
+    </springProfile>
+</configuration>
+

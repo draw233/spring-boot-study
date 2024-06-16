@@ -1,0 +1,5 @@
+services:
+  springboot:
+    image: web:latest
+    ports:
+      - 7777:7777
